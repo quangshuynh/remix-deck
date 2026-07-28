@@ -148,14 +148,15 @@ export class RemixEngine {
 
   // --- loading ------------------------------------------------------------
 
-  async loadFile(file: File): Promise<void> {
+  /** `displayName` overrides the filename, used when loading a separated stem. */
+  async loadFile(file: File, displayName?: string): Promise<void> {
     this.setState('loading')
     try {
       const bytes = await file.arrayBuffer()
       const ctx = this.context()
       const decoded = await ctx.decodeAudioData(bytes)
       this.adoptBuffer(decoded, {
-        name: baseName(file.name),
+        name: displayName ?? baseName(file.name),
         duration: decoded.duration,
         sampleRate: decoded.sampleRate,
         channels: decoded.numberOfChannels,
@@ -251,7 +252,7 @@ export class RemixEngine {
     if (!this.buffer) return
     const ctx = this.context()
 
-    const chain = buildChain(ctx, this.paramsValue)
+    const chain = buildChain(ctx, this.paramsValue, ctx.destination, { withMeters: true })
     const source = ctx.createBufferSource()
     source.buffer = this.buffer
     source.playbackRate.value = this.paramsValue.rate
@@ -337,6 +338,30 @@ export class RemixEngine {
     if (!this.rafHandle) return
     cancelAnimationFrame(this.rafHandle)
     this.rafHandle = 0
+  }
+
+  // --- metering -----------------------------------------------------------
+
+  private meterBuffer = new Float32Array(1024)
+
+  /**
+   * Current output level per channel as linear RMS, 0 to 1. Returns silence
+   * when stopped so the meters fall rather than freezing at the last value.
+   */
+  levels(): { left: number; right: number } {
+    const meters = this.chain?.meters
+    if (!meters || this.stateValue !== 'playing') return { left: 0, right: 0 }
+
+    const read = (analyser: AnalyserNode) => {
+      analyser.getFloatTimeDomainData(this.meterBuffer)
+      let sum = 0
+      for (let i = 0; i < this.meterBuffer.length; i++) {
+        sum += this.meterBuffer[i] * this.meterBuffer[i]
+      }
+      return Math.sqrt(sum / this.meterBuffer.length)
+    }
+
+    return { left: read(meters.left), right: read(meters.right) }
   }
 
   // --- parameters ---------------------------------------------------------

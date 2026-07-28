@@ -13,6 +13,9 @@ export function useEngine() {
   const [presetId, setPresetId] = useState('original')
   const [error, setError] = useState<string | null>(null)
   const [loop, setLoopState] = useState(false)
+  // Kept so the stem panel can re-upload exactly what the user loaded, rather
+  // than re-encoding the decoded buffer.
+  const [sourceFile, setSourceFile] = useState<File | null>(null)
   const bootstrapped = useRef(false)
 
   useEffect(() => engine.subscribe(setSnapshot), [engine])
@@ -26,6 +29,7 @@ export function useEngine() {
   const loadDemo = useCallback(() => {
     try {
       engine.loadDemo()
+      setSourceFile(null)
       setError(null)
       bootstrapped.current = true
     } catch (err) {
@@ -34,9 +38,10 @@ export function useEngine() {
   }, [engine])
 
   const loadFile = useCallback(
-    async (file: File) => {
+    async (file: File, displayName?: string) => {
       try {
-        await engine.loadFile(file)
+        await engine.loadFile(file, displayName)
+        setSourceFile(file)
         setError(null)
         bootstrapped.current = true
       } catch (err) {
@@ -105,6 +110,7 @@ export function useEngine() {
   return {
     engine,
     ...snapshot,
+    sourceFile,
     loop,
     error,
     setError,

@@ -2,13 +2,16 @@
 
 Load a song you own, apply a remix preset, hear it in real time, export a WAV.
 
-Phase 1 is complete: everything runs in the browser with the Web Audio API. There is no
-backend yet.
+Phase 1 (browser DSP) and Phase 2 (stems, heavy renders, metadata) are both in. The deck
+is fully usable with the frontend alone; the backend only adds what the browser cannot do.
 
 ```bash
 npm install
 npm run dev
 ```
+
+The backend is optional and lives in [`backend/`](backend/README.md). Without it the Stems
+panel reports "Backend offline" and everything else works normally.
 
 ## Ground rules
 
@@ -28,6 +31,7 @@ offline renderer so an export cannot drift from what was previewed:
 
 ```
 AudioBufferSourceNode (playbackRate)
+  > highpass (body)
   > lowshelf 110 Hz (bass)
   > highshelf 7 kHz (air)
   > lowpass (tone)
@@ -37,8 +41,11 @@ AudioBufferSourceNode (playbackRate)
   > DynamicsCompressor (punch)
   > master gain
   > limiter
-  > destination
+  > destination (+ analyser taps for the output meters)
 ```
+
+The highpass is an addition to the original spec. It is what makes Telephone and AM Radio
+possible: without it there is no way to remove body, only top.
 
 The limiter is a fixed guard rail rather than a control. Without it, heavy presets such as
 Bass Boosted into a wet reverb push past 0 dBFS and the export clips instead of sounding
@@ -75,13 +82,18 @@ src/components/ panel UI
 
 ## Presets
 
-Grouped by what they change: Time, Weight, Space, Texture. A preset is only a set of
-parameter values, and selecting one moves the visible controls, so it is a starting point
-rather than a mode.
+28 of them, grouped by what they change. A preset is only a set of parameter values, and
+selecting one moves the visible controls, so it is a starting point rather than a mode.
 
-Original, Sped Up, Nightcore, Slowed, Slowed + Reverb, Chopped and Screwed, Bass Boosted,
-Club Mix, Festival Mix, Hardstyle Edit, 8D Audio, Chillstep, Ambient Wash, Lo-fi,
-Vaporwave, Memphis Phonk, Drift Phonk, Witch House.
+- **Time** — Original, Sped Up, Nightcore, Slowed, Slowed + Reverb, Chopped and Screwed,
+  Daycore, Sped Up + Reverb, Hyperpop
+- **Weight** — Trap, Rage, Bass Boosted, Club Mix, Festival Mix, Hardstyle Edit
+- **Space** — 8D Audio, Chillstep, Ambient Wash, Stadium, Underwater
+- **Texture** — Plugg, Telephone, AM Radio, Lo-fi, Vaporwave, Memphis Phonk, Drift Phonk,
+  Witch House
+
+Instrumental and Karaoke are not in this list because they are not presets. They need the
+backend, and they live in the Stems panel.
 
 ## Not in scope
 
@@ -89,13 +101,15 @@ Cover versions (metal, piano, orchestral, jazz, choir) are new performances, not
 processing. Remastered, live, demo and clean versions are separate recordings that already
 exist. Neither is faked with effects presets.
 
+**Adlibs are in this category too.** Adding adlibs means adding audio that is not in the
+track. That needs either a library of someone else's vocal samples or generated vocals;
+no filter chain produces a voice that is not already in the file. Trap, Rage and Plugg are
+here because they are parameter sets. An adlib preset would not be.
+
 ## Still to build
 
-- Phase 2: FastAPI backend for Demucs stem separation (Instrumental and Karaoke presets),
-  ffmpeg rendering, a job queue, and a `/search` proxy so the Spotify client secret stays
-  server side. Streaming APIs are for metadata only: title, artist, art, duration.
-- Phase 3: BPM and key detection, preset chains in URL parameters, MP3 export via lamejs,
-  A/B toggle.
+Phase 3: BPM and key detection, preset chains in URL parameters, MP3 export via lamejs,
+A/B toggle against the unprocessed source.
 
 ## Deploying
 
