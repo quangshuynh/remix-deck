@@ -16,6 +16,7 @@ import type { RemixParams } from './types.ts'
 export interface RemixChain {
   /** Connect the source node here. */
   input: AudioNode
+  cut: BiquadFilterNode
   bass: BiquadFilterNode
   air: BiquadFilterNode
   tone: BiquadFilterNode
@@ -28,6 +29,8 @@ export interface RemixChain {
   compressor: DynamicsCompressorNode
   master: GainNode
   limiter: DynamicsCompressorNode
+  /** Post-limiter taps for the meters. Absent on offline renders. */
+  meters: { left: AnalyserNode; right: AnalyserNode } | null
 }
 
 export const BASS_FREQ = 110
@@ -55,7 +58,15 @@ export function buildChain(
   ctx: BaseAudioContext,
   p: RemixParams,
   destination: AudioNode = ctx.destination,
+  { withMeters = false }: { withMeters?: boolean } = {},
 ): RemixChain {
+  // Highpass first: strip what is not wanted before the shelf boosts it. This
+  // is what makes the radio and telephone presets possible.
+  const cut = ctx.createBiquadFilter()
+  cut.type = 'highpass'
+  cut.frequency.value = p.cut
+  cut.Q.value = 0.7
+
   const bass = ctx.createBiquadFilter()
   bass.type = 'lowshelf'
   bass.frequency.value = BASS_FREQ
@@ -117,6 +128,7 @@ export function buildChain(
   limiter.attack.value = 0.002
   limiter.release.value = 0.12
 
+  cut.connect(bass)
   bass.connect(air)
   air.connect(tone)
   tone.connect(dry)
@@ -130,8 +142,26 @@ export function buildChain(
   master.connect(limiter)
   limiter.connect(destination)
 
+  // Meters tap the very end of the chain, so they show what is actually
+  // leaving the deck rather than what went into it.
+  let meters: RemixChain['meters'] = null
+  if (withMeters) {
+    const splitter = ctx.createChannelSplitter(2)
+    const left = ctx.createAnalyser()
+    const right = ctx.createAnalyser()
+    left.fftSize = 1024
+    right.fftSize = 1024
+    left.smoothingTimeConstant = 0.6
+    right.smoothingTimeConstant = 0.6
+    limiter.connect(splitter)
+    splitter.connect(left, 0)
+    splitter.connect(right, 1)
+    meters = { left, right }
+  }
+
   return {
-    input: bass,
+    input: cut,
+    cut,
     bass,
     air,
     tone,
@@ -144,6 +174,7 @@ export function buildChain(
     compressor,
     master,
     limiter,
+    meters,
   }
 }
 
@@ -165,6 +196,7 @@ export function applyParams(
     param.setTargetAtTime(value, now, timeConstant)
   }
 
+  set(chain.cut.frequency, p.cut)
   set(chain.bass.gain, p.bass)
   set(chain.air.gain, p.air)
   set(chain.tone.frequency, p.tone)

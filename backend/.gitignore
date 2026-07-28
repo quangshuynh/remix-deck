@@ -1,0 +1,7 @@
+.venv/
+.work/
+.env
+__pycache__/
+*.pyc
+.rendertest/
+.ffmpeg-shim/

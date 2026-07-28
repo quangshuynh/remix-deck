@@ -3,6 +3,8 @@ import { PARAM_SPECS } from './audio/presets.ts'
 import type { ParamGroup } from './audio/types.ts'
 import { ControlWell } from './components/ControlWell.tsx'
 import { DropZone } from './components/DropZone.tsx'
+import { Meters } from './components/Meters.tsx'
+import { StemPanel } from './components/StemPanel.tsx'
 import { PitchFader } from './components/PitchFader.tsx'
 import { Platter } from './components/Platter.tsx'
 import { PresetRack } from './components/PresetRack.tsx'
@@ -26,6 +28,7 @@ export default function App() {
     error,
     activePreset,
     isEdited,
+    sourceFile,
   } = deck
 
   // Load the generated loop up front so the deck is usable before any upload.
@@ -110,16 +113,19 @@ export default function App() {
               onSeek={deck.seek}
             />
 
-            <Transport
-              state={state}
-              loop={loop}
-              canPlay={canPlay}
-              onPlay={deck.play}
-              onPause={deck.pause}
-              onStop={deck.stop}
-              onToggleLoop={deck.toggleLoop}
-              onRender={() => void deck.download()}
-            />
+            <div className="deck__row">
+              <Transport
+                state={state}
+                loop={loop}
+                canPlay={canPlay}
+                onPlay={deck.play}
+                onPause={deck.pause}
+                onStop={deck.stop}
+                onToggleLoop={deck.toggleLoop}
+                onRender={() => void deck.download()}
+              />
+              <Meters engine={engine} playing={state === 'playing'} />
+            </div>
 
             <DropZone onFile={(file) => void deck.loadFile(file)} onDemo={deck.loadDemo} hasTrack={Boolean(track)} />
           </div>
@@ -138,6 +144,12 @@ export default function App() {
           </p>
           <PresetRack activeId={activePreset.id} isEdited={isEdited} onSelect={deck.applyPreset} />
         </section>
+
+        <StemPanel
+          file={sourceFile}
+          trackName={track?.name ?? null}
+          onStemLoaded={(file, label) => void deck.loadFile(file, label)}
+        />
 
         <section className="panel panel--controls" aria-label="Controls">
           <div className="panel__head">

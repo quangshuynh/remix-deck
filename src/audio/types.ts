@@ -12,6 +12,8 @@ export interface RemixParams {
   air: number
   /** Lowpass cutoff in Hz. 20000 is effectively open. */
   tone: number
+  /** Highpass cutoff in Hz. 20 is effectively open; raising it thins the body. */
+  cut: number
   /** Reverb send, 0 dry to 1 fully wet. */
   wet: number
   /** Reverb decay in seconds. Drives the length of the generated impulse. */

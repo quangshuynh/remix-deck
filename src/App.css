@@ -741,6 +741,199 @@
 }
 
 /* =========================================================================
+   Output meters
+   ========================================================================= */
+
+.deck__row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.deck__row .transport {
+  flex: 1;
+  align-content: center;
+}
+
+/* Meters sit in their own recess, like a bank of LEDs behind smoked plastic. */
+.meters {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  border-radius: var(--radius);
+  background: var(--well);
+  box-shadow: var(--recess);
+  min-width: 186px;
+}
+
+.meters__label {
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6f767e;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.meters__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.meters__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meters__side {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #6f767e;
+  width: 7px;
+}
+
+.meters__track {
+  position: relative;
+  flex: 1;
+  height: 9px;
+  border-radius: 2px;
+  background: #07090a;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+
+/* Green through amber to red across the scale, so the top of the meter reads
+   as a warning without needing a separate clip light. */
+.meters__fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(
+    90deg,
+    #3fbf5f 0%,
+    #6ee07a 42%,
+    var(--amber) 74%,
+    #ff7a1a 88%,
+    var(--accent-hi) 100%
+  );
+}
+
+.meters__peak {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  opacity: 0.85;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+}
+
+.meters__ticks {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 11px,
+    rgba(0, 0, 0, 0.55) 11px 12px
+  );
+  pointer-events: none;
+}
+
+/* =========================================================================
+   Stems panel
+   ========================================================================= */
+
+.lamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.lamp::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7d838a;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.lamp--on::before {
+  background: #3fbf5f;
+  box-shadow: 0 0 7px #3fbf5f;
+}
+
+.lamp--off::before {
+  background: var(--accent-dim);
+}
+
+.stems__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stems__hint {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.stems__hint code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.stems__progress {
+  margin-top: 10px;
+  position: relative;
+  height: 20px;
+  border-radius: var(--radius);
+  background: var(--well);
+  box-shadow: var(--recess);
+  overflow: hidden;
+}
+
+.stems__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--amber-dim), var(--amber));
+  transition: width 0.3s ease;
+}
+
+.stems__detail {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.stems__error {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: #7c1a16;
+  font-weight: 600;
+}
+
+/* =========================================================================
    Drop zone
    ========================================================================= */
 
