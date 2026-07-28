@@ -1,0 +1,11 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+python-multipart>=0.0.12
+httpx>=0.27
+pydantic>=2.9
+pydantic-settings>=2.6
+
+# Stem separation. Torch is large; install the build that matches your machine
+# from https://pytorch.org/get-started/locally/ if you want GPU acceleration.
+demucs>=4.0.1
+torch>=2.2
