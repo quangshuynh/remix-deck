@@ -10,8 +10,20 @@ npm install
 npm run dev
 ```
 
+The dev server runs at `http://localhost:5173/remix-deck/` (it redirects from `/`), which
+matches how it is served in production.
+
 The backend is optional and lives in [`backend/`](backend/README.md). Without it the Stems
 panel reports "Backend offline" and everything else works normally.
+
+## Mobile
+
+The panel folds to one column below 860px, and transport and meters stop sharing a row
+below 620px. Touch sizing is keyed on `pointer: coarse` rather than width, because a narrow
+window on a desktop still has a mouse and a large tablet still has fingers; the eleven
+parameter sliders grow from 20px to 34px and every button clears 44px. The vertical pitch
+fader sets `touch-action: none`, without which a drag scrolls the page instead of moving
+the fader.
 
 ## Ground rules
 
@@ -113,5 +125,42 @@ A/B toggle against the unprocessed source.
 
 ## Deploying
 
-`npm run deploy` publishes `dist/` to GitHub Pages. `vite.config.ts` sets the production
-base to `/remix-deck/` to match the repository name.
+**The frontend belongs on GitHub Pages. The backend cannot go there.**
+
+GitHub Pages serves static files only. It will happily host the Vite build, and Phase 1 is
+the whole app for most purposes: local file decoding, all 28 presets, live preview and WAV
+export are pure browser code with no server involved. It cannot run Python, so Demucs has
+nowhere to execute.
+
+Two ways to publish the frontend:
+
+- Push to `main` and let [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) do
+  it. Enable Pages with "GitHub Actions" as the source first.
+- Or `npm run deploy`, which builds and pushes `dist/` with the `gh-pages` package.
+
+`vite.config.ts` sets `base` to `/remix-deck/` unconditionally, matching the repository
+name. It is not conditional on purpose: making it depend on `command` breaks
+`vite preview`, which reports `serve` and would then serve at `/` while the built HTML asks
+for `/remix-deck/`. Keeping it fixed means `npm run preview` exercises exactly what ships.
+If you rename the repo or move to a custom domain, this is the one line to change.
+
+### If you want the backend online too
+
+Host it separately and point the frontend at it with `VITE_API_BASE` (a repository variable
+in the workflow, or `.env.local` for a local build). Without it the Stems panel reports
+"Backend offline" and nothing else changes.
+
+Worth knowing before you pick a host: Demucs pulls in torch, so the image runs to a couple
+of gigabytes and separation is CPU-heavy for minutes per track. Free tiers with small
+memory limits or aggressive idle shutdown will struggle. Hugging Face Spaces is a
+reasonable fit because the ML dependencies are expected there; Fly.io, Render and Railway
+all work on a paid instance.
+
+There is also a protocol catch. A page served from `https://…github.io` calling a plain
+`http://` backend is mixed content and gets blocked, so a deployed backend needs HTTPS.
+`http://localhost` is treated as a trustworthy origin by Chrome and Firefox and is usually
+allowed even from an HTTPS page, but Safari is stricter, so do not rely on
+"deployed frontend, backend on my laptop" as a setup.
+
+Honestly, for a personal tool, leaving the backend local is the sane default: run
+`uvicorn` when you want stems, and let the Pages build cover everything else.

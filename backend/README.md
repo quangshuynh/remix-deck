@@ -16,6 +16,17 @@ uvicorn app.main:app --reload --port 8000
 `ffmpeg` must be on PATH for `/render`. `GET /health` reports whether it was found
 and whether Spotify credentials are configured.
 
+## Tests
+
+```bash
+.venv/Scripts/python.exe smoke_test.py    # API surface, no ffmpeg or Demucs needed
+.venv/Scripts/python.exe render_test.py   # real ffmpeg renders; pip install imageio-ffmpeg
+```
+
+`render_test.py` uses the ffmpeg binary bundled with `imageio-ffmpeg` so it can run without
+one installed system wide. It checks output length against `duration / rate`, which is what
+catches an accidental switch from `asetrate` to `atempo`.
+
 ## Endpoints
 
 | Method | Path | Purpose |

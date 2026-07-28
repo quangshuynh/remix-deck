@@ -453,9 +453,14 @@
   height: 100%;
   opacity: 0;
   cursor: ns-resize;
+  /* writing-mode is the modern way to stand a range input up; the legacy
+     appearance keyword is kept for older Safari, which still needs it. */
   writing-mode: vertical-lr;
   direction: rtl;
   appearance: slider-vertical;
+  /* Without this a vertical drag scrolls the page instead of moving the
+     fader, which makes the signature control unusable on a phone. */
+  touch-action: none;
 }
 
 .fader__input:focus-visible + * {
@@ -1218,6 +1223,67 @@
 }
 
 /* =========================================================================
+   Touch devices
+   Keyed on pointer type, not width: a small window on a desktop still has a
+   mouse, and a large tablet still has fingers. The controls that matter here
+   are the eleven parameter sliders, which are the whole point of the panel.
+   ========================================================================= */
+
+@media (pointer: coarse) {
+  .knob__input {
+    height: 34px;
+  }
+
+  .knob__input::-webkit-slider-runnable-track {
+    height: 8px;
+  }
+
+  .knob__input::-moz-range-track {
+    height: 8px;
+  }
+
+  .knob__input::-webkit-slider-thumb {
+    width: 20px;
+    height: 26px;
+    margin-top: -9px;
+  }
+
+  .knob__input::-moz-range-thumb {
+    width: 20px;
+    height: 26px;
+  }
+
+  .knob {
+    gap: 2px 8px;
+  }
+
+  /* Comfortable minimum for anything tappable. */
+  .btn,
+  .chip,
+  .fader__reset {
+    min-height: 44px;
+  }
+
+  .btn--small {
+    min-height: 36px;
+  }
+
+  .deck__error-close {
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+
+  /* A wider slot is easier to grab than a wider knob cap. */
+  .fader__slot {
+    width: 44px;
+  }
+
+  .fader__body {
+    grid-template-columns: 9px 1fr 22px;
+  }
+}
+
+/* =========================================================================
    Responsive: the console folds to a single column on narrow screens
    ========================================================================= */
 
@@ -1227,7 +1293,7 @@
   }
 
   .deck__platter {
-    grid-template-columns: minmax(0, 200px) 74px;
+    grid-template-columns: minmax(0, 200px) 84px;
     justify-content: center;
     gap: 22px;
   }
@@ -1237,7 +1303,7 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 620px) {
   .deck {
     padding: 14px 10px 40px;
   }
@@ -1246,41 +1312,130 @@
     padding: 14px 12px;
   }
 
+  .panel::before,
+  .panel::after {
+    display: none;
+  }
+
+  .deck__header {
+    padding: 0;
+  }
+
   .brand__name {
     font-size: 21px;
   }
 
+  .deck__notice {
+    font-size: 12.5px;
+    max-width: none;
+  }
+
   .lcd__clock {
-    font-size: 27px;
+    font-size: 30px;
   }
 
   .deck__platter {
-    grid-template-columns: minmax(0, 150px) 68px;
-    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 16px;
+    align-items: center;
+  }
+
+  /* Transport and meters stop competing for the same row. */
+  .deck__row {
+    flex-direction: column;
+    gap: 9px;
   }
 
   .transport {
-    gap: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 7px;
   }
 
   .btn {
-    padding: 8px 11px;
-    font-size: 12px;
-  }
-
-  /* On a phone the glyph carries the meaning; the word is redundant. */
-  .btn--play .btn__text,
-  .btn--toggle .btn__text {
-    display: none;
-  }
-
-  .btn--render {
-    margin-left: 0;
-    width: 100%;
     justify-content: center;
+    padding: 10px 8px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  /* Render is the primary action, so it gets its own full-width row. */
+  .btn--render {
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+
+  .meters {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Two columns roughly halves a very long scroll. */
+  .rack__buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .chip {
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    padding: 7px 8px;
+    line-height: 1.2;
+  }
+
+  /* Panel labels stay legible rather than shrinking to fit. */
+  .lcd__key,
+  .meters__label,
+  .meters__side,
+  .fader__scale {
+    font-size: 10.5px;
+  }
+
+  .well__blurb,
+  .rack__title {
+    font-size: 11.5px;
   }
 
   .waveform {
-    height: 74px;
+    height: 84px;
+  }
+
+  /* Narrow screens are overwhelmingly touch, and a 20px slider is fiddly with
+     any input device. The pointer: coarse block above covers large tablets. */
+  .knob__input {
+    height: 34px;
+  }
+
+  .knob__input::-webkit-slider-runnable-track,
+  .knob__input::-moz-range-track {
+    height: 8px;
+  }
+
+  .knob__input::-webkit-slider-thumb {
+    width: 20px;
+    height: 26px;
+    margin-top: -9px;
+  }
+
+  .knob__input::-moz-range-thumb {
+    width: 20px;
+    height: 26px;
+  }
+}
+
+@media (max-width: 340px) {
+  /* Only at the very narrowest do two preset columns start truncating. */
+  .rack__buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .transport {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .deck__platter {
+    grid-template-columns: minmax(0, 1fr) 84px;
+    gap: 12px;
   }
 }
