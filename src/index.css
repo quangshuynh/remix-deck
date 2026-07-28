@@ -1,111 +1,129 @@
+/* ---------------------------------------------------------------------------
+   Remix Deck: hardware, not SaaS.
+   The reference is a DJ mixer front panel — brushed aluminium, dark recessed
+   control wells, an amber LCD, and red reserved for the primary action.
+   --------------------------------------------------------------------------- */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Brushed aluminium panel */
+  --alu-hi: #c8ccd0;
+  --alu: #b2b6bb;
+  --alu-mid: #9ca1a7;
+  --alu-lo: #7f858c;
+  --alu-edge: #6b7178;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Recessed wells and sockets */
+  --well: #17191c;
+  --well-deep: #0e1012;
+  --well-rim: #5f656c;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Amber LCD */
+  --lcd-bg: #1a1405;
+  --lcd-bg-hi: #241c07;
+  --amber: #ffb000;
+  --amber-dim: #a87404;
+  --amber-glow: rgba(255, 176, 0, 0.35);
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* Red accent: primary and destructive only */
+  --accent: #d8302a;
+  --accent-hi: #ef4a41;
+  --accent-dim: #8d1f1b;
+
+  /* Waveform */
+  --wave: #6e747b;
+  --wave-played: var(--amber);
+  --wave-grid: rgba(0, 0, 0, 0.16);
+
+  --ink: #23262a;
+  --ink-soft: #4d535a;
+  --ink-faint: #6f767e;
+  --on-dark: #d7dbe0;
+
+  --font-label: 'Barlow Condensed', 'Oswald', 'Arial Narrow', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', 'Consolas', monospace;
+
+  --radius: 4px;
+  --radius-lg: 7px;
+
+  /* A panel screwed to a chassis: hard top highlight, soft inner shadow. */
+  --bevel: inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+  --recess: inset 0 2px 5px rgba(0, 0, 0, 0.75),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.09);
+
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
 body {
   margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  font-family: var(--font-label);
+  color: var(--ink);
+  /* The chassis the panel is mounted in. */
+  background: #26292d;
+  background-image: radial-gradient(circle at 50% 0%, #34383d 0%, #1e2124 70%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
+h2,
+h3,
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+/* Every label on the panel is condensed, uppercase and widely tracked. */
+h1,
+h2,
+h3,
+label,
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* Every number is mono, so digits do not jitter as they change. */
+output,
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Keyboard focus must stay obvious against both the panel and the wells. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
